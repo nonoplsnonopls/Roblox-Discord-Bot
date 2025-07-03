@@ -16,6 +16,6 @@
     "discord-api-types": "^0.37.37"
   },
   "engines": {
-    "node": "16.x"
+    "node": "18.x"
   }
 }
