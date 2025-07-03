@@ -1,5 +1,3 @@
-// Filename: index.js
-
 require('dotenv').config();
 const express = require('express');
 const { Client, GatewayIntentBits } = require('discord.js');
@@ -25,8 +23,6 @@ client.on('interactionCreate', async interaction => {
     await interaction.deferReply({ ephemeral: true });
 
     // The bot will talk to its own web server to process the code.
-    // On Render, the server runs on a specific port provided by the PORT env var.
-    // Internally, we can still think of it as localhost.
     try {
         const res = await fetch(`http://localhost:${process.env.PORT || 3000}/submit-code`, {
             method: 'POST',
@@ -51,15 +47,13 @@ client.login(process.env.DISCORD_BOT_TOKEN);
 
 // --- Web Server Setup ---
 const app = express();
-const PORT = process.env.PORT || 3000; // Use port provided by Render or default to 3000
+const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
-// A simple home page to know the server is running
 app.get('/', (req, res) => {
   res.send('Verification server is online! Your bot should be ready.');
 });
 
-// Endpoint for Roblox to request a new verification code
 app.post('/generate-code', (req, res) => {
     const { robloxId } = req.body;
     if (!robloxId) {
@@ -74,7 +68,6 @@ app.post('/generate-code', (req, res) => {
     verificationCodes.set(code, robloxId);
     console.log(`Generated code ${code} for Roblox ID ${robloxId}`);
 
-    // Codes expire after 5 minutes
     setTimeout(() => {
         if (verificationCodes.get(code) === robloxId) {
             verificationCodes.delete(code);
@@ -85,7 +78,6 @@ app.post('/generate-code', (req, res) => {
     res.status(200).json({ status: 'success', code: code });
 });
 
-// Endpoint for the Discord bot to submit the code for verification
 app.post('/submit-code', (req, res) => {
     const { code, discordId, discordTag } = req.body;
     
@@ -102,7 +94,6 @@ app.post('/submit-code', (req, res) => {
     res.status(200).json({ status: 'success', message: 'Verification successful.' });
 });
 
-// Endpoint for Roblox to check if a player is verified (e.g., when they join)
 app.get('/check-status/:robloxId', (req, res) => {
     const { robloxId } = req.params;
     if (verifiedUsers.has(robloxId)) {
